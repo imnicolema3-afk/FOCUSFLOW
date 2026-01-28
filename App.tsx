@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Home, BarChart3, ListTodo, Briefcase, GraduationCap, User,
@@ -75,11 +74,10 @@ const NavItem = ({ id, icon: Icon, label, active, onClick }: any) => (
   </button>
 );
 
-const TimelineView = ({ onSelectDate, tasks, events, birthdays, onOpenReview, todayDate, view }: any) => {
+const TimelineView = ({ onSelectDate, tasks, events, birthdays, onOpenReview, todayDate, view, scrollRef }: any) => {
   const currentYear = todayDate.getFullYear();
   const yearData = useMemo(() => generateYearData(currentYear), [currentYear]);
   const todayStr = formatDate(todayDate);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const centerToday = () => {
@@ -93,7 +91,7 @@ const TimelineView = ({ onSelectDate, tasks, events, birthdays, onOpenReview, to
     centerToday();
     const timeout = setTimeout(centerToday, 100);
     return () => clearTimeout(timeout);
-  }, [view]);
+  }, [view, scrollRef]);
 
   return (
     <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-10 no-scrollbar">
@@ -174,6 +172,7 @@ const App: React.FC = () => {
   const [expandedTrId, setExpandedTrId] = useState<string | null>(null);
   const [now, setNow] = useState(new Date());
   const [isSyncing, setIsSyncing] = useState(false);
+  const timelineScrollRef = useRef<HTMLDivElement>(null);
 
   // States
   const [tasks, setTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem('focusflow_tasks') || '[]'));
@@ -217,6 +216,15 @@ const App: React.FC = () => {
       if (newXP >= XP_LEVEL_THRESHOLD) { newXP -= XP_LEVEL_THRESHOLD; newLevel += 1; }
       return { ...prev, xp: newXP, level: newLevel };
     });
+  };
+
+  const jumpToToday = () => {
+    if (timelineScrollRef.current) {
+      const todayEl = timelineScrollRef.current.querySelector('[data-today="true"]');
+      if (todayEl) {
+        todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
   };
 
   const handleResetData = () => {
@@ -419,11 +427,49 @@ const App: React.FC = () => {
                   <SunDim size={18} className="text-orange-400" /><span className="text-xs font-black uppercase tracking-widest">CLEAR</span>
                 </div>
               </div>
-              <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <button onClick={jumpToToday} className="w-16 h-16 bg-indigo-500 rounded-[2rem] flex items-center justify-center text-white shadow-xl shadow-indigo-100 hover:scale-110 active:scale-95 transition-transform"><CalendarIcon size={30} fill="currentColor" /></button>
                 <button onClick={() => setIsQuickMemoOpen(true)} className="w-16 h-16 bg-yellow-400 rounded-[2rem] flex items-center justify-center text-white shadow-xl shadow-yellow-100 hover:scale-110 active:scale-95 transition-transform"><Lightbulb size={32} fill="currentColor" /></button>
               </div>
             </header>
-            <TimelineView todayDate={now} onSelectDate={setSelectedDate} tasks={tasks} events={[]} birthdays={[]} view={activeView} />
+            <TimelineView scrollRef={timelineScrollRef} todayDate={now} onSelectDate={setSelectedDate} tasks={tasks} events={[]} birthdays={[]} view={activeView} />
+          </div>
+        );
+      case 'work':
+      case 'school':
+        const category: TaskCategory = activeView === 'work' ? 'Work' : 'School';
+        const filteredTasks = tasks.filter(t => t.category === category);
+        return (
+          <div className="p-8 pt-12 space-y-10 bg-white h-full overflow-y-auto pb-40 no-scrollbar app-container">
+            <header className="flex justify-between items-end">
+              <div>
+                <h2 className="text-4xl font-black font-heading uppercase tracking-tighter">{activeView} Space</h2>
+                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mt-1">Productivity Zone</p>
+              </div>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${activeView === 'work' ? 'bg-blue-50 text-blue-500' : 'bg-orange-50 text-orange-500'}`}>
+                {activeView === 'work' ? <Briefcase size={24} /> : <GraduationCap size={24} />}
+              </div>
+            </header>
+            <div className="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 space-y-6">
+               <div className="flex items-center gap-3 border-b border-gray-200/50 pb-4">
+                 <PlusCircle size={20} className="text-gray-400" />
+                 <input type="text" placeholder={`Add ${activeView} task...`} className="bg-transparent border-none text-sm font-bold outline-none flex-1" onKeyDown={(e) => { if(e.key === 'Enter' && e.currentTarget.value.trim()) { addTask(e.currentTarget.value.trim(), category); e.currentTarget.value = ''; }}} />
+               </div>
+               <div className="space-y-3">
+                 {filteredTasks.length === 0 ? (
+                   <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-center py-10">Empty Space</p>
+                 ) : (
+                   filteredTasks.map(task => (
+                     <div key={task.id} className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                       <button onClick={() => handleToggleTask(task.id)} className={`w-5 h-5 rounded-lg border-2 shrink-0 ${task.status === TaskStatus.DONE ? 'bg-black border-black text-white' : 'border-gray-200'}`}>
+                         {task.status === TaskStatus.DONE && <CheckCircle2 size={12} />}
+                       </button>
+                       <span className={`text-sm font-bold flex-1 ${task.status === TaskStatus.DONE ? 'text-gray-300 line-through' : 'text-gray-700'}`}>{task.text}</span>
+                     </div>
+                   ))
+                 )}
+               </div>
+            </div>
           </div>
         );
       case 'me':
@@ -523,6 +569,8 @@ const App: React.FC = () => {
       <nav className="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-2xl border-t border-gray-100 flex justify-between px-2 pt-2 pb-8 z-50">
         <NavItem id="home" icon={Home} label="Home" active={activeView === 'home'} onClick={(v: any) => {setActiveView(v); setSelectedDate(null);}} />
         <NavItem id="trackers" icon={BarChart3} label="Money" active={activeView === 'trackers'} onClick={setActiveView} />
+        <NavItem id="work" icon={Briefcase} label="Work" active={activeView === 'work'} onClick={setActiveView} />
+        <NavItem id="school" icon={GraduationCap} label="School" active={activeView === 'school'} onClick={setActiveView} />
         <NavItem id="lists" icon={ListTodo} label="Dump" active={activeView === 'lists'} onClick={setActiveView} />
         <NavItem id="me" icon={User} label="Me" active={activeView === 'me'} onClick={setActiveView} />
       </nav>
