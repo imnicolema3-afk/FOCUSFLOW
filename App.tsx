@@ -4,7 +4,7 @@ import {
   CheckCircle2, Trophy, Flame, Plus, Trash2, 
   ChevronLeft, ChevronRight, Sparkles, X, Lightbulb, 
   Calendar as CalendarIcon, Bell, Send, Cake, Gift, Star, 
-  SunDim, DollarSign, Heart, AlertCircle, Calendar, MapPin, ChevronDown, ChevronUp, Cloud, CloudCheck,
+  SunDim, DollarSign, Heart, AlertCircle, MapPin, ChevronDown, ChevronUp, Cloud, Check,
   SquareCheck, PlusCircle, Settings, Info, Download, Globe, Github, Rocket, MousePointer2, FileCode, Folder, Key, ExternalLink, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { 
@@ -507,7 +507,7 @@ const App: React.FC = () => {
       case 'trackers':
         return (
           <div className="p-8 space-y-10 bg-white h-full overflow-y-auto pb-40 no-scrollbar app-container">
-            <header className="flex justify-between items-center"><h2 className="text-3xl font-black font-heading uppercase tracking-tighter">Finance Tracker</h2><CloudCheck size={16} className="text-emerald-500" /></header>
+            <header className="flex justify-between items-center"><h2 className="text-3xl font-black font-heading uppercase tracking-tighter">Finance Tracker</h2><div className="flex items-center gap-2 text-emerald-500"><Cloud size={16} /><Check size={12} /></div></header>
             <div className="bg-black rounded-[3rem] p-10 text-white shadow-2xl border border-gray-900">
               <span className="text-[10px] uppercase tracking-widest opacity-60">Total Balance</span>
               <h3 className="text-5xl font-black font-heading mt-2">${transactions.reduce((s, t) => t.type === 'income' ? s + t.amount : s - t.amount, 0).toLocaleString()}</h3>
