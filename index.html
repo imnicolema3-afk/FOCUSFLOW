@@ -65,8 +65,8 @@
       </div>
     </div>
     <div id="root"></div>
-    <!-- In Vite projects, we use a leading slash for the entry point -->
-    <script type="module" src="/index.tsx"></script>
+    <!-- Vite needs a relative path starting with ./ for the entry point -->
+    <script type="module" src="./index.tsx"></script>
     <script>
       window.addEventListener('load', () => {
         const splash = document.getElementById('splash-screen');
