@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  Home, BarChart3, ListTodo, Briefcase, GraduationCap, User,
-  CheckCircle2, Trophy, Flame, Plus, Trash2, 
+  Home, BarChart, ListTodo, Briefcase, GraduationCap, User,
+  CircleCheck, Trophy, Flame, Plus, Trash2, 
   ChevronLeft, ChevronRight, Sparkles, X, Lightbulb, 
-  Calendar as CalendarIcon, Bell, Send, Cake, Gift, Star, 
+  Calendar, Bell, Send, Cake, Gift, Star, 
   SunDim, DollarSign, Heart, AlertCircle, MapPin, ChevronDown, ChevronUp, Cloud, Check,
-  SquareCheck, PlusCircle, Settings, Info, Download, Globe, Github, Rocket, MousePointer2, FileCode, Folder, Key, ExternalLink, AlertTriangle, RefreshCw
+  CheckSquare, CirclePlus, Settings, Info, Globe, Github, Rocket, MousePointer2, FileCode, Folder, Key, ExternalLink, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { 
   Task, TaskStatus, Event, Transaction, BrainDump, 
@@ -110,7 +110,7 @@ const TimelineView = ({ onSelectDate, tasks, events, birthdays, onOpenReview, to
                 const isSunday = date.getDay() === 0;
                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
                 const holiday = HOLIDAYS[dateStr];
-                const bday = birthdays.find((b: any) => b.date === dateStr.slice(5));
+                const bday = birthdays?.find((b: any) => b.date === dateStr.slice(5));
 
                 return (
                   <React.Fragment key={dateStr}>
@@ -144,8 +144,8 @@ const TimelineView = ({ onSelectDate, tasks, events, birthdays, onOpenReview, to
                     </div>
                     {isSunday && (
                       <div className="w-full max-w-[200px] mx-auto my-4">
-                        <button onClick={(e) => { e.stopPropagation(); onOpenReview(date); }} className={`w-full bg-white border border-dashed border-gray-200 py-3 rounded-2xl flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all group shadow-sm ${isPast ? 'opacity-80' : ''}`}>
-                          <BarChart3 size={14} className="group-hover:rotate-12 transition-transform" /><span className="text-[11px] font-black uppercase tracking-widest">Weekly Review</span>
+                        <button onClick={(e) => { e.stopPropagation(); onOpenReview?.(date); }} className={`w-full bg-white border border-dashed border-gray-200 py-3 rounded-2xl flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all group shadow-sm ${isPast ? 'opacity-80' : ''}`}>
+                          <BarChart size={14} className="group-hover:rotate-12 transition-transform" /><span className="text-[11px] font-black uppercase tracking-widest">Weekly Review</span>
                         </button>
                       </div>
                     )}
@@ -273,17 +273,12 @@ const App: React.FC = () => {
     setIsOrganizing(false);
   };
 
-  const dayOfYear = getDayOfYear(now);
-  const yearProgress = (dayOfYear / 365) * 100;
-
   const renderView = () => {
     switch (activeView) {
       case 'home':
         if (selectedDate) {
           const dayTransactions = transactions.filter(t => t.date === selectedDate);
-          const dayIncome = dayTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-          const dayExpense = dayTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-          const dayBalance = dayIncome - dayExpense;
+          const dayBalance = dayTransactions.reduce((s, t) => t.type === 'income' ? s + t.amount : s - t.amount, 0);
           const dayJournal = journalEntries.find(j => j.date === selectedDate) || { date: selectedDate, grateful: ['', '', ''], thoughts: '' };
           const dayTasks = tasks.filter(t => t.date === selectedDate);
           
@@ -306,7 +301,7 @@ const App: React.FC = () => {
                      }} className="p-1 hover:bg-gray-100 rounded-lg text-gray-300 hover:text-black transition-colors"><ChevronRight size={20}/></button>
                    </div>
                    <div className="flex items-center justify-center gap-2 text-gray-400 mt-1">
-                    <CalendarIcon size={12} />
+                    <Calendar size={12} />
                     <span className="text-[10px] font-black uppercase tracking-widest">{getFullDateString(selectedDate)}</span>
                    </div>
                 </div>
@@ -328,7 +323,7 @@ const App: React.FC = () => {
                 {dailyMode === 'log' ? (
                   <div className="space-y-6">
                     <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-50/50">
-                      <div className="flex items-center gap-3 text-gray-800 mb-6"><SquareCheck size={22} /><h3 className="text-lg font-bold font-heading">To-Do</h3></div>
+                      <div className="flex items-center gap-3 text-gray-800 mb-6"><CheckSquare size={22} /><h3 className="text-lg font-bold font-heading">To-Do</h3></div>
                       <div className="space-y-4">
                         <div className="flex items-center gap-3 py-2 px-1 group border-b border-gray-50 mb-2">
                           <Plus size={18} className="text-gray-300 shrink-0" />
@@ -346,7 +341,7 @@ const App: React.FC = () => {
                                   )}
                                 </div>
                                 <button onClick={() => handleToggleTask(task.id)} className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${task.status === TaskStatus.DONE ? 'bg-black border-black text-white' : 'border-gray-200'}`}>
-                                  {task.status === TaskStatus.DONE && <CheckCircle2 size={14} />}
+                                  {task.status === TaskStatus.DONE && <CircleCheck size={14} />}
                                 </button>
                               </div>
                               {expandedTaskId === task.id && (
@@ -424,11 +419,11 @@ const App: React.FC = () => {
                 <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em] mb-1">{now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                 <h1 className="text-6xl font-black font-heading text-gray-800 tracking-tighter uppercase">{now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</h1>
                 <div className="flex items-center gap-2 text-gray-400">
-                  <SunDim size={18} className="text-orange-400" /><span className="text-xs font-black uppercase tracking-widest">CLEAR</span>
+                  <SunDim size={18} className="text-orange-400" /><span className="text-xs font-black uppercase tracking-widest">FOCUS MODE</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={jumpToToday} className="w-16 h-16 bg-indigo-500 rounded-[2rem] flex items-center justify-center text-white shadow-xl shadow-indigo-100 hover:scale-110 active:scale-95 transition-transform"><CalendarIcon size={30} fill="currentColor" /></button>
+                <button onClick={jumpToToday} className="w-16 h-16 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white shadow-xl shadow-indigo-100 hover:scale-110 active:scale-95 transition-transform"><Calendar size={30} fill="currentColor" /></button>
                 <button onClick={() => setIsQuickMemoOpen(true)} className="w-16 h-16 bg-yellow-400 rounded-[2rem] flex items-center justify-center text-white shadow-xl shadow-yellow-100 hover:scale-110 active:scale-95 transition-transform"><Lightbulb size={32} fill="currentColor" /></button>
               </div>
             </header>
@@ -452,7 +447,7 @@ const App: React.FC = () => {
             </header>
             <div className="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 space-y-6">
                <div className="flex items-center gap-3 border-b border-gray-200/50 pb-4">
-                 <PlusCircle size={20} className="text-gray-400" />
+                 <CirclePlus size={20} className="text-gray-400" />
                  <input type="text" placeholder={`Add ${activeView} task...`} className="bg-transparent border-none text-sm font-bold outline-none flex-1" onKeyDown={(e) => { if(e.key === 'Enter' && e.currentTarget.value.trim()) { addTask(e.currentTarget.value.trim(), category); e.currentTarget.value = ''; }}} />
                </div>
                <div className="space-y-3">
@@ -462,7 +457,7 @@ const App: React.FC = () => {
                    filteredTasks.map(task => (
                      <div key={task.id} className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                        <button onClick={() => handleToggleTask(task.id)} className={`w-5 h-5 rounded-lg border-2 shrink-0 ${task.status === TaskStatus.DONE ? 'bg-black border-black text-white' : 'border-gray-200'}`}>
-                         {task.status === TaskStatus.DONE && <CheckCircle2 size={12} />}
+                         {task.status === TaskStatus.DONE && <CircleCheck size={12} />}
                        </button>
                        <span className={`text-sm font-bold flex-1 ${task.status === TaskStatus.DONE ? 'text-gray-300 line-through' : 'text-gray-700'}`}>{task.text}</span>
                      </div>
@@ -545,30 +540,9 @@ const App: React.FC = () => {
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-xs px-8"><button onClick={() => setIsQuickMemoOpen(false)} className="w-full bg-black text-white py-5 rounded-[2rem] font-black uppercase text-[11px]">Save Memory</button></div>
       </div>
 
-      {/* SETUP GUIDE */}
-      <div className={`fixed inset-0 z-[300] bg-white flex flex-col items-center transition-all transform ${isHelpOpen ? 'translate-y-0' : 'translate-y-full'}`}>
-        <header className="w-full max-w-md px-8 pt-12 pb-6 flex justify-between items-center"><h2 className="text-2xl font-black font-heading uppercase tracking-tighter">Setup Instructions</h2><button onClick={() => setIsHelpOpen(false)} className="p-3 text-gray-300 hover:text-black rounded-full bg-gray-50"><X size={24} /></button></header>
-        <div className="w-full max-w-md flex-1 overflow-y-auto px-8 pb-32 no-scrollbar space-y-8">
-           <div className="bg-emerald-50 p-6 rounded-[2rem] border border-emerald-100 space-y-3">
-             <div className="flex items-center gap-2 text-emerald-600 font-black uppercase text-[10px] tracking-widest"><Globe size={14} /> Step 1: GitHub Root</div>
-             <p className="text-xs font-medium text-emerald-800 leading-relaxed">Open your <code>FocusFlow</code> folder on your PC. Drag <strong>ALL</strong> the individual files directly into GitHub. Do NOT drag the folder itself.</p>
-           </div>
-           <div className="bg-purple-50 p-6 rounded-[2rem] border border-purple-100 space-y-3">
-             <div className="flex items-center gap-2 text-purple-600 font-black uppercase text-[10px] tracking-widest"><Key size={14} /> Step 2: Environment Variable</div>
-             <p className="text-xs font-medium text-purple-800 leading-relaxed">In Vercel Settings, add a variable named <code>API_KEY</code> and paste your Gemini key there. Then re-deploy.</p>
-           </div>
-           <div className="space-y-4">
-             <h4 className="text-[10px] font-black uppercase tracking-widest text-orange-500">Required Files:</h4>
-             <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 font-mono text-[11px] text-gray-600 space-y-1">
-                <div>index.html</div><div>package.json</div><div>vercel.json</div><div>App.tsx</div><div>types.ts</div><div>index.tsx</div><div>services/geminiService.ts</div>
-             </div>
-           </div>
-        </div>
-      </div>
-
       <nav className="max-w-md mx-auto fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-2xl border-t border-gray-100 flex justify-between px-2 pt-2 pb-8 z-50">
         <NavItem id="home" icon={Home} label="Home" active={activeView === 'home'} onClick={(v: any) => {setActiveView(v); setSelectedDate(null);}} />
-        <NavItem id="trackers" icon={BarChart3} label="Money" active={activeView === 'trackers'} onClick={setActiveView} />
+        <NavItem id="trackers" icon={BarChart} label="Money" active={activeView === 'trackers'} onClick={setActiveView} />
         <NavItem id="work" icon={Briefcase} label="Work" active={activeView === 'work'} onClick={setActiveView} />
         <NavItem id="school" icon={GraduationCap} label="School" active={activeView === 'school'} onClick={setActiveView} />
         <NavItem id="lists" icon={ListTodo} label="Dump" active={activeView === 'lists'} onClick={setActiveView} />
